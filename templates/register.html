@@ -16,12 +16,12 @@ Grocery - Register
     <input type="text" name="username" id="username" class="form-control">
 
     <label for="password" class="form-label">Password:</label>
-    <input type="text" name="password" id="password" class="form-control">
+    <input type="password" name="password" id="password" class="form-control">
 
     <button type="submit" class="btn btn-primary">
         <i class="fa-solid fa-right-to-bracket"></i>
         Register
     </button>
 </form>
-<a href="/login">Login</a>
+<a href="{{url_for('login')}}">Login</a>
 {% endblock %}
