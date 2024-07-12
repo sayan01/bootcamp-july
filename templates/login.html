@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Grocery - Login
+{% endblock %}
+
+
+{% block content %}
+    
+<h1>Login</h1>
+
+<form action="">
+    <label for="username" class="form-label">Username:</label>
+    <input type="text" name="username" id="username" class="form-control">
+
+    <label for="password" class="form-label">Password:</label>
+    <input type="text" name="password" id="password" class="form-control">
+
+    <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        Login
+    </button>
+</form>
+<a href="/register">Register</a>
+{% endblock %}
