@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from main import app
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy(app)
 
@@ -13,6 +14,17 @@ class User(db.Model):
 
     carts = db.relationship('Cart', backref=db.backref('user', lazy=True))
     transactions = db.relationship('Transaction', backref=db.backref('user', lazy=True))
+
+    @property
+    def password(self):
+        raise AttributeError('Password is not a readable attribute')
+
+    @password.setter
+    def password(self, password):
+        self.passhash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.passhash, password)
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
