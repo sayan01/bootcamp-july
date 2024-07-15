@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>
+        Profile
+    </h1>
+    <div class="outer">
+        <div class="user-card ">
+            <div class="user-card-left">
+                <img src="https://api.dicebear.com/9.x/pixel-art/png?seed={{user.username}}" alt="avatar">
+            </div>
+            <div class="user-card-right">
+                <p class="fs-4">
+                    @{{user.username}}
+                </p>
+                <h2>{{user.name}}</h2>
+            </div>
+        </div>
+        <form action="{{url_for('update_username')}}" method="post" class="d-flex flex-row justify-content-center align-items-baseline">
+            <div class="my-3 ">
+                <input type="text" class="form-control" id="username" name="username" value="{{user.username}}">
+            </div>
+            <button type="submit" class="btn btn-primary">Update Username</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block style %}
+   <style>
+    .outer{
+        display: flex;
+        flex-direction: column;
+    }
+    .user-card{
+        display: flex;
+        gap: 20px;
+        border: 1px solid #ccc;
+        padding: 50px;
+        justify-content: center;
+    }
+    .user-card-right{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .user-card-left > img{
+        aspect-ratio: 1/1;
+        width: 100px;
+        border-radius: 50px;
+    }
+   </style>
+{% endblock %}

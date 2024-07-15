@@ -1,14 +1,52 @@
 from flask import render_template, request, redirect, url_for, session, flash
 from models import User, Category, Product, Cart, Transaction, Order, db
 from main import app
+from functools import wraps
+
+def login_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        user_id = session.get('user_id', None)
+        if not user_id:
+            flash("Please login to continue!")
+            return redirect(url_for('login'))
+        return func(*args, **kwargs)
+    return wrapper
 
 @app.route('/')
+@login_required
 def home():
     user_id = session.get('user_id', None)
-    user = None
-    if user_id:
-        user = User.query.get(user_id)
+    user = User.query.get(user_id)
     return render_template('home.html', user=user)
+
+@app.route('/profile')
+@login_required
+def profile():
+    user_id = session.get('user_id', None)
+    user = User.query.get(user_id)
+    return render_template('profile.html', user=user)
+
+@app.route('/update_username', methods=['POST'])
+@login_required
+def update_username():
+    user_id = session.get('user_id', None)
+    user = User.query.get(user_id)
+    username = request.form.get('username')
+    user_exists = User.query.filter_by(username=username).first()
+    if user_exists:
+        flash("Username already exists!")
+        return redirect(url_for('profile'))
+    user.username = username
+    db.session.commit()
+    flash("Username updated successfully!")
+    return redirect(url_for('profile'))
+
+@app.route('/logout')
+@login_required
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
 
 @app.route('/login')
 def login():
