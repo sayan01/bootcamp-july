@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Product{% endblock %}
+
+{% block content %}
+    <h1>Edit Product</h1>
+    <form method="post">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" name="name" id="name" class="form-control" required value="{{product.name}}">
+        <label for="price" class="form-label">Price</label>
+        <input type="numeric" name="price" id="price" class="form-control" required value="{{product.price}}">
+        <label for="quantity" class="form-label">Quantity</label>
+        <input type="numeric" name="quantity" id="quantity" class="form-control" required value="{{product.quantity}}">
+        <label for="category" class="form-label">Category</label>
+        <select name="category" id="category" class="form-control">
+            {% for category in categories %}
+                <option value="{{category.id}}" {% if category.id == product.category.id %}selected{% endif %}>{{category.name}}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-pencil    "></i>
+            Edit</button>
+    </form>
+{% endblock content %}

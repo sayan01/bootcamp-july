@@ -224,3 +224,104 @@ def product_list(category_id):
         flash("Category not found!")
         return redirect(url_for('admin'))
     return render_template('admin/product_list.html', category=category)
+
+@app.route('/product/add')
+@admin_required
+def product_add():
+    categories = Category.query.all()
+    return render_template('admin/product_add.html', categories=categories)
+
+@app.route('/product/add', methods=['POST'])
+@admin_required
+def product_add_post():
+    name = request.form.get('name')
+    price = request.form.get('price')
+    quantity = request.form.get('quantity')
+    category_id = request.form.get('category')
+    if not name or not price or not quantity or not category_id:
+        flash("All fields are required!")
+        return redirect(url_for('product_add'))
+
+    try:
+        price = float(price)
+        quantity = int(quantity)
+    except ValueError:
+        flash("Price and Quantity must be numbers!")
+        return redirect(url_for('product_add'))
+
+    category = Category.query.get(category_id)
+    if not category:
+        flash("Category not found!")
+        return redirect(url_for('product_add'))
+
+    product = Product(name=name, price=price, quantity=quantity, category=category)
+    db.session.add(product)
+    db.session.commit()
+    flash("Product added successfully!")
+    return redirect(url_for('admin'))
+
+@app.route('/product/<int:product_id>/edit')
+@admin_required
+def product_edit(product_id):
+    product = Product.query.get(product_id)
+    if not product:
+        flash("Product not found!")
+        return redirect(url_for('admin'))
+    categories = Category.query.all()
+    return render_template('admin/product_edit.html', product=product, categories=categories)
+
+@app.route('/product/<int:product_id>/edit', methods=['POST'])
+@admin_required
+def product_edit_post(product_id):
+    product = Product.query.get(product_id)
+    if not product:
+        flash("Product not found!")
+        return redirect(url_for('admin'))
+    name = request.form.get('name')
+    price = request.form.get('price')
+    quantity = request.form.get('quantity')
+    category_id = request.form.get('category')
+    if not name or not price or not quantity or not category_id:
+        flash("All fields are required!")
+        return redirect(url_for('product_edit', product_id=product_id))
+
+    try:
+        price = float(price)
+        quantity = int(quantity)
+    except ValueError:
+        flash("Price and Quantity must be numbers!")
+        return redirect(url_for('product_edit', product_id=product_id))
+
+    category = Category.query.get(category_id)
+    if not category:
+        flash("Category not found!")
+        return redirect(url_for('product_edit', product_id=product_id))
+
+    product.name = name
+    product.price = price
+    product.quantity = quantity
+    product.category = category
+    db.session.commit()
+    flash("Product updated successfully!")
+    return redirect(url_for('admin'))
+
+@app.route('/product/<int:product_id>/delete')
+@admin_required
+def product_delete(product_id):
+    product = Product.query.get(product_id)
+    if not product:
+        flash("Product not found!")
+        return redirect(url_for('admin'))
+    return render_template('admin/product_delete.html', product=product)
+
+@app.route('/product/<int:product_id>/delete', methods=['POST'])
+@admin_required
+def product_delete_post(product_id):
+    product = Product.query.get(product_id)
+    if not product:
+        flash("Product not found!")
+        return redirect(url_for('admin'))
+    db.session.delete(product)
+    db.session.commit()
+    flash("Product deleted successfully!")
+    return redirect(url_for('admin'))

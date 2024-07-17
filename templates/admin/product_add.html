@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Product{% endblock %}
+
+{% block content %}
+    <h1>Add Product</h1>
+    <form method="post">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" name="name" id="name" class="form-control" required>
+        <label for="price" class="form-label">Price</label>
+        <input type="numeric" name="price" id="price" class="form-control" required>
+        <label for="quantity" class="form-label">Quantity</label>
+        <input type="numeric" name="quantity" id="quantity" class="form-control" required>
+        <label for="category" class="form-label">Category</label>
+        <select name="category" id="category" class="form-control">
+            {% for category in categories %}
+                <option value="{{category.id}}">{{category.name}}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus    "></i>
+            Add</button>
+    </form>
+{% endblock content %}
