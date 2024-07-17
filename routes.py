@@ -18,6 +18,8 @@ def login_required(func):
 def home():
     user_id = session.get('user_id', None)
     user = User.query.get(user_id)
+    if user.is_admin:
+        return redirect(url_for('admin'))
     return render_template('home.html', user=user)
 
 @app.route('/profile')
@@ -90,3 +92,61 @@ def register_post():
     flash("User registered successfully!")
     return redirect(url_for('login'))
 
+
+@app.route('/admin')
+@login_required
+def admin():
+    user_id = session.get('user_id', None)
+    user = User.query.get(user_id)
+    if not user.is_admin:
+        flash("You are not authorized to view this page!")
+        return redirect(url_for('home'))
+    categories = Category.query.all()
+    users = User.query.all()
+    return render_template('admin.html', current_user=user, categories=categories, users=users)
+
+@app.route('/user/<int:user_id>/delete')
+@login_required
+def user_delete(user_id):
+    user_to_delete = User.query.get(user_id)
+    if not user_to_delete:
+        flash("User not found!")
+        return redirect(url_for('admin'))
+    if user_to_delete.is_admin:
+        flash("Cannot delete admin!")
+        return redirect(url_for('admin'))
+    return render_template('admin/user_delete.html', user=user_to_delete)
+
+@app.route('/user/<int:user_id>/delete', methods=['POST'])
+@login_required
+def user_delete_post(user_id):
+    user_to_delete = User.query.get(user_id)
+    if not user_to_delete:
+        flash("User not found!")
+        return redirect(url_for('admin'))
+    if user_to_delete.is_admin:
+        flash("Cannot delete admin!")
+        return redirect(url_for('admin'))
+    db.session.delete(user_to_delete)
+    db.session.commit()
+    flash("User deleted successfully!")
+    return redirect(url_for('admin'))
+
+@app.route('/category/add')
+@login_required
+def category_add():
+    return render_template('admin/category_add.html')
+
+@app.route('/category/add', methods=['POST'])
+@login_required
+def category_add_post():
+    name = request.form.get('name')
+    description = request.form.get('description')
+    if not name:
+        flash("Name is required!")
+        return redirect(url_for('category_add'))
+    category = Category(name=name, description=description)
+    db.session.add(category)
+    db.session.commit()
+    flash("Category added successfully!")
+    return redirect(url_for('admin'))

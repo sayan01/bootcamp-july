@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+    <h1>Admin</h1>
+    <p>Welcome to the admin page!</p>
+    <hr>
+    {% include 'admin/user_list.html' %}
+    {% include 'admin/category_list.html' %}
+{% endblock content %}

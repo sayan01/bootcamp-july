@@ -1,0 +1,26 @@
+<h2>Users</h2>
+<p>Number of Users: {{users | length }}</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Options</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ "Admin" if user.is_admin else "Customer" }}</td>
+                <td>
+                    {% if not user.is_admin %}
+                        <a href="{{url_for('user_delete',user_id=user.id)}}" class="btn btn-danger">Delete</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

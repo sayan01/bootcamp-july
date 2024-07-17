@@ -66,3 +66,8 @@ class Order(db.Model):
 
 with app.app_context():
     db.create_all()
+    first_admin = User.query.filter_by(is_admin=True).first()
+    if not first_admin:
+        admin = User(name="Admin", username="admin", password="admin", is_admin=True)
+        db.session.add(admin)
+        db.session.commit()
