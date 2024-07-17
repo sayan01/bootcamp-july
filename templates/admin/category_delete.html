@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Category{% endblock%}
+
+{% block content %}
+    <h1>Delete Category</h1>
+    <p>Are you sure you want to delete the category '{{category.name}}'?</p>
+    <p>{{category.description}}</p>
+    <form method="post">
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash    "></i>
+            Delete</button>
+        <a href="{{url_for('admin')}}" class="btn btn-outline-danger">
+            <i class="fa fa-arrow-circle-left" aria-hidden="true"></i>
+            Cancel</a>
+    </form>
+{% endblock %}
