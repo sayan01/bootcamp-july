@@ -37,7 +37,8 @@ def home():
     user = User.query.get(user_id)
     if user.is_admin:
         return redirect(url_for('admin'))
-    return render_template('home.html', user=user)
+    categories = Category.query.all()
+    return render_template('home.html', user=user, categories=categories)
 
 @app.route('/profile')
 @login_required
@@ -229,6 +230,10 @@ def product_list(category_id):
 @admin_required
 def product_add():
     categories = Category.query.all()
+    category_id = request.args.get('category_id', None)
+    if category_id:
+        category_id = int(category_id)
+        return render_template('admin/product_add.html', categories=categories, category_id=category_id)
     return render_template('admin/product_add.html', categories=categories)
 
 @app.route('/product/add', methods=['POST'])
@@ -325,3 +330,57 @@ def product_delete_post(product_id):
     db.session.commit()
     flash("Product deleted successfully!")
     return redirect(url_for('admin'))
+
+# user routes
+
+@app.route('/product/<int:product_id>/add_to_cart', methods=['POST'])
+@login_required
+def add_to_cart(product_id):
+    user_id = session.get('user_id', None)
+    user = User.query.get(user_id)
+    product = Product.query.get(product_id)
+    if not product:
+        flash("Product not found!")
+        return redirect(url_for('home'))
+    quantity = request.form.get('quantity')
+    if not quantity:
+        flash("Quantity is required!")
+        return redirect(url_for('home'))
+    try:
+        quantity = int(quantity)
+    except ValueError:
+        flash("Quantity must be a number!")
+        return redirect(url_for('home'))
+    cart = Cart.query.filter_by(user=user, product=product).first()
+    if cart:
+        cart.quantity += quantity
+    else:
+        cart = Cart(user=user, product=product, quantity=quantity)
+        db.session.add(cart)
+    db.session.commit()
+    flash("Product added to cart!")
+    return redirect(url_for('home'))
+
+@app.route('/cart')
+@login_required
+def cart():
+    user_id = session.get('user_id', None)
+    user = User.query.get(user_id)
+    total = sum([cart.product.price * cart.quantity for cart in user.carts])
+    return render_template('cart.html', user=user, total=total)
+
+@app.route('/cart/<int:cart_id>/delete')
+@login_required
+def cart_delete(cart_id):
+    user = User.query.get(session.get('user_id', None))
+    cart = Cart.query.get(cart_id)
+    if not cart:
+        flash("Cart not found!")
+        return redirect(url_for('cart'))
+    if cart.user != user:
+        flash("You are not authorized to delete this cart!")
+        return redirect(url_for('cart'))
+    db.session.delete(cart)
+    db.session.commit()
+    flash("Product deleted from cart successfully!")
+    return redirect(url_for('cart'))

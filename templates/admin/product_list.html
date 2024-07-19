@@ -5,7 +5,7 @@
 {% block content %}
 <h2>Products</h2>
 <p>Number of Products in Category {{category.name}}: {{category.products | length }}</p>
-<a href="{{url_for('product_add')}}" class="btn btn-success">
+<a href="{{url_for('product_add', category_id=category.id)}}" class="btn btn-success">
     <i class="fas fa-plus    "></i>
     Add</a>
 <table class="table">

@@ -14,7 +14,7 @@
         <label for="category" class="form-label">Category</label>
         <select name="category" id="category" class="form-control">
             {% for category in categories %}
-                <option value="{{category.id}}">{{category.name}}</option>
+                <option value="{{category.id}}" {% if category.id == category_id %}selected{% endif %} >{{category.name}}</option>
             {% endfor %}
         </select>
         <button type="submit" class="btn btn-success">

@@ -5,5 +5,36 @@ Home - Groceri
 {% endblock title %}
 
 {% block content %}
-Hello User {{user.username}}
+{% for category in categories %}
+    <h1>{{category.name}}</h1>
+    <hr>
+    <div class="products">
+
+    {% for product in category.products %}
+        <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">{{product.name}}</h5>
+            <h6 class="card-subtitle mb-2 text-body-secondary">&#8377;{{product.price}}</h6>
+            <p class="card-text">Quantity Left: {{product.quantity}}</p>
+        </div>
+        <div class="card-footer ">
+            <form action="{{url_for('add_to_cart', product_id = product.id)}}" method="post">
+                <input type="number" name="quantity" id="quantity" class="form-control" value="1" required>
+                <button type="submit" class="btn btn-success">Add to Cart</button>
+            </form>
+        </div>
+        </div>
+    {% endfor %}
+    </div>
+{% endfor %}
 {% endblock content %}
+
+{% block style %}
+<style>
+    .products{
+        display: flex;
+        gap: 1em;
+        flex-wrap: wrap;
+    }
+</style>
+{% endblock %}
