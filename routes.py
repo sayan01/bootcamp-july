@@ -37,8 +37,22 @@ def home():
     user = User.query.get(user_id)
     if user.is_admin:
         return redirect(url_for('admin'))
+    search_query = request.args.get('search', None)
+    if search_query:
+        categories = Category.query.filter(Category.name.ilike(f"%{search_query}%")).all()
+        return render_template('home.html', user=user, categories=categories, search_query=search_query)
     categories = Category.query.all()
     return render_template('home.html', user=user, categories=categories)
+
+@app.route('/products')
+@login_required
+def products():
+    search_query = request.args.get('search', None)
+    if search_query:
+        products = Product.query.filter(Product.name.ilike(f"%{search_query}%")).all()
+        return render_template('products.html', products=products, search_query=search_query)
+    products = Product.query.all()
+    return render_template('products.html', products=products)
 
 @app.route('/profile')
 @login_required
@@ -66,6 +80,7 @@ def update_username():
 @login_required
 def logout():
     session.pop('user_id', None)
+    session.pop('is_admin', None)
     return redirect(url_for('login'))
 
 @app.route('/login')
@@ -83,6 +98,8 @@ def login_post():
         return redirect(url_for('login'))
     
     session['user_id'] = user.id
+    if user.is_admin:
+        session['is_admin'] = True
     return redirect(url_for('home'))
 
 @app.route('/register')
@@ -384,3 +401,48 @@ def cart_delete(cart_id):
     db.session.commit()
     flash("Product deleted from cart successfully!")
     return redirect(url_for('cart'))
+
+@app.route('/cart/checkout')
+@login_required
+def checkout():
+    user = User.query.get(session.get('user_id', None))
+    total = sum([cart.product.price * cart.quantity for cart in user.carts])
+    if total == 0:
+        flash("Cart is empty!")
+        return redirect(url_for('cart'))
+    return render_template('checkout.html', user=user, total=total)
+
+@app.route('/cart/checkout', methods=['POST'])
+@login_required
+def checkout_post():
+    user = User.query.get(session.get('user_id', None))
+    total = sum([cart.product.price * cart.quantity for cart in user.carts])
+    if total == 0:
+        flash("Cart is empty!")
+        return redirect(url_for('cart'))
+    out_of_stock = False
+    for cart in user.carts:
+        if cart.quantity > cart.product.quantity:
+            flash(f"Quantity of {cart.product.name} exceeds stock! Updating cart quantity")
+            out_of_stock = True
+            cart.quantity = cart.product.quantity
+    if out_of_stock:
+        db.session.commit()
+        return redirect(url_for('cart'))
+    transaction = Transaction(user=user, total=total)
+    db.session.add(transaction)
+    for cart in user.carts:
+        order = Order(transaction=transaction, product=cart.product, quantity=cart.quantity, price=cart.product.price)
+        db.session.add(order)
+        cart.product.quantity -= cart.quantity
+        db.session.delete(cart)
+    db.session.commit()
+    flash("Transaction completed successfully!")
+    return redirect(url_for('orders'))
+
+@app.route('/orders')
+@login_required
+def orders():
+    user = User.query.get(session.get('user_id', None))
+    transactions = Transaction.query.filter_by(user=user).order_by(Transaction.datetime.desc()).all()
+    return render_template('orders.html', user=user, transactions=transactions)

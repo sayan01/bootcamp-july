@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Checkout{% endblock%}
+
+{% block content %}
+    <h1>Confirm Checkout?</h1>
+    <p>Are you sure you want to make the purchase worth &#8377;{{total}}?</p>
+    <form method="post">
+        <button type="submit" class="btn btn-success">Checkout</button>
+        <a href="{{url_for('cart')}}" class="btn btn-secondary">Cancel</a>
+    </form>
+{% endblock %}

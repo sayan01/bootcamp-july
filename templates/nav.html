@@ -13,12 +13,17 @@
           <li class="nav-item">
             <a class="nav-link" href="{{url_for('profile')}}">Profile</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{url_for('cart')}}">My Cart</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">My Orders</a>
-          </li>
+          {% if 'is_admin' not in session %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('products')}}">All Products</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('cart')}}">My Cart</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('orders')}}">My Orders</a>
+            </li>
+          {% endif %}
           <li class="nav-item">
             <a class="nav-link" href="{{url_for('logout')}}">Logout</a>
           </li>

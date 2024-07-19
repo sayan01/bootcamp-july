@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<h1>My Orders</h1>
+<p>Number of Transactions: {{user.transactions | length }}</p>
+
+{% for transaction in transactions %}
+<h2>Transaction ID: #{{transaction.id}}</h2>
+<h3 class="text-muted">{{ transaction.datetime.strftime("%d %b, %Y at %H:%M")}}</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in transaction.orders %}
+            <tr>
+                <td>{{ order.product.name }}</td>
+                <td>&#8377;{{ order.price }}</td>
+                <td>{{ order.quantity }}</td>
+                <td>&#8377;{{ order.price * order.quantity }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="3">Total</th>
+            <th>&#8377;{{ transaction.total }}</th>
+            <th>
+            </th>
+        </tr>
+    </tfoot>
+</table>
+{% endfor %}
+{% endblock %}
