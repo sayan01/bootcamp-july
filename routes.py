@@ -2,6 +2,8 @@ from flask import render_template, request, redirect, url_for, session, flash
 from models import User, Category, Product, Cart, Transaction, Order, db
 from main import app
 from functools import wraps
+import csv
+from os import path
 
 def login_required(func):
     @wraps(func)
@@ -69,7 +71,7 @@ def update_username():
     username = request.form.get('username')
     user_exists = User.query.filter_by(username=username).first()
     if user_exists:
-        flash("Username already exists!")
+        flash("Username already exists!", "error")
         return redirect(url_for('profile'))
     user.username = username
     db.session.commit()
@@ -94,7 +96,7 @@ def login_post():
 
     user = User.query.filter_by(username=username).first()
     if not user or not user.check_password(password):
-        flash("Invalid username or password!")
+        flash("Invalid username or password!", "error")
         return redirect(url_for('login'))
     
     session['user_id'] = user.id
@@ -134,11 +136,14 @@ def admin():
     user_id = session.get('user_id', None)
     user = User.query.get(user_id)
     if not user.is_admin:
-        flash("You are not authorized to view this page!")
+        flash("You! are not authorized to view this page!", "error")
         return redirect(url_for('home'))
     categories = Category.query.all()
     users = User.query.all()
-    return render_template('admin.html', current_user=user, categories=categories, users=users)
+    category_names = [category.name for category in categories]
+    category_sizes = [len(category.products) for category in categories]
+
+    return render_template('admin.html', current_user=user, categories=categories, users=users, category_names=category_names, category_sizes=category_sizes)
 
 @app.route('/user/<int:user_id>/delete')
 @admin_required
@@ -360,6 +365,9 @@ def add_to_cart(product_id):
         flash("Product not found!")
         return redirect(url_for('home'))
     quantity = request.form.get('quantity')
+    if product.quantity == 0:
+        flash("Product out of stock!")
+        return redirect(url_for('home'))
     if not quantity:
         flash("Quantity is required!")
         return redirect(url_for('home'))
@@ -446,3 +454,20 @@ def orders():
     user = User.query.get(session.get('user_id', None))
     transactions = Transaction.query.filter_by(user=user).order_by(Transaction.datetime.desc()).all()
     return render_template('orders.html', user=user, transactions=transactions)
+
+@app.route('/orders/csv')
+@login_required
+def orders_csv():
+    user = User.query.get(session.get('user_id', None))
+    transactions = Transaction.query.filter_by(user=user).order_by(Transaction.datetime.desc()).all()
+    header = ['Transaction ID', 'Total', 'Date', 'Items']
+    csv_folder = url_for('static', filename='csv')
+    csv_name = f"{user.username}_orders.csv"
+    csv_path = path.join(csv_folder, csv_name)
+    csvwriter = csv.writer(open(csv_path.lstrip('/'), 'w'))
+    csvwriter.writerow(header)
+    for transaction in transactions:
+        items = ', '.join([f"{order.product.name} x{order.quantity}" for order in transaction.orders])
+        csvwriter.writerow([transaction.id, transaction.total, transaction.datetime, items])
+    flash("CSV generated successfully!")
+    return redirect(csv_path)

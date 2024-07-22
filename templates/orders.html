@@ -4,6 +4,8 @@
 
 {% block content %}
 <h1>My Orders</h1>
+<button class="btn btn-primary" onclick="window.print()" >Print</button>
+<a href="{{url_for('orders_csv')}}" class="btn btn-secondary">Download CSV</a>
 <p>Number of Transactions: {{user.transactions | length }}</p>
 
 {% for transaction in transactions %}
